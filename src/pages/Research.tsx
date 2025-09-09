@@ -16,16 +16,23 @@ import {
   Home,
   Settings,
   Bell,
-  History
+  History,
+  Wallet,
+  Zap
 } from 'lucide-react';
+import { JunoOrchestrator, type UserProfile, type QueryContext, type JunoResponse } from '@/lib/agents';
+import { useWallet } from '@/hooks/useWallet';
+import { CommandPalette } from '@/components/CommandPalette';
+import { ChartVision } from '@/components/ChartVision';
+import { PaperTradingModal } from '@/components/PaperTradingModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
   type: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  agents?: AgentResponse[];
-  analysis?: MarketAnalysis;
+  junoResponse?: JunoResponse;
 }
 
 interface AgentResponse {
@@ -59,8 +66,13 @@ const Research = () => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [connectedWallet, setConnectedWallet] = useState<string | null>('0x742d...3a9f');
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showChartVision, setShowChartVision] = useState(false);
+  const [showPaperTrading, setShowPaperTrading] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { walletInfo, connectWallet, disconnectWallet, isConnecting, formatAddress } = useWallet();
+  const { toast } = useToast();
 
   const assets = ['BTC', 'ETH', 'SOL', 'AVAX', 'LINK', 'UNI'];
   const timeframes = ['1h', '4h', '1d', '1w'];
@@ -76,66 +88,53 @@ const Research = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const query = inputValue;
     setInputValue('');
     setIsAnalyzing(true);
 
-    // Simulate AI analysis
-    setTimeout(() => {
-      const analysisMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: 'Based on multi-agent analysis, here\'s my assessment of the current market conditions:',
-        timestamp: new Date(),
-        agents: [
-          {
-            agent: 'SentimentAgent',
-            score: 1.2,
-            confidence: 78,
-            highlights: ['Bullish social momentum', 'Influencer alignment positive', 'Funding neutral'],
-            status: 'complete'
-          },
-          {
-            agent: 'TechnicalAgent', 
-            score: -0.5,
-            confidence: 85,
-            highlights: ['Key support at $62,350', 'Resistance at $68,200', 'Bull flag pattern forming'],
-            status: 'complete'
-          },
-          {
-            agent: 'MacroAgent',
-            score: -0.3,
-            confidence: 72,
-            highlights: ['Fed uncertainty weighing', 'DXY strength headwind', 'Correlation risk elevated'],
-            status: 'complete'
-          },
-          {
-            agent: 'OnChainAgent',
-            score: 0.8,
-            confidence: 80,
-            highlights: ['Exchange outflows continue', 'Whale accumulation detected', 'Active addresses rising'],
-            status: 'complete'
-          }
-        ],
-        analysis: {
-          asset: 'BTC',
-          bias: 'neutral',
-          conviction: 65,
-          keyLevels: {
-            support: [62350, 60000],
-            resistance: [68200, 72000]
-          },
-          recommendations: [
-            'Consider partial profit-taking near $68k resistance',
-            'Invalidation below $60k support',
-            'Monitor Fed policy developments closely'
-          ],
-          riskReward: 2.3
-        }
+    try {
+      // Mock user profile for demo
+      const mockProfile: UserProfile = {
+        objective: 'growth',
+        horizon: 'swing',
+        risk_tolerance: 'med',
+        jurisdictions: ['US'],
+        assets_followed: ['BTC', 'ETH'],
+        exchanges: ['Coinbase', 'Binance'],
+        portfolio_positions: [{ symbol: 'BTC', size: 0.5, cost: 62000 }],
+        cash_allocation: 0.5,
+        notifications_opt_in: true,
+        staking_tier: walletInfo?.tier || 'Free',
+        reputation_score: 75
       };
 
-      setMessages(prev => [...prev, analysisMessage]);
-      setIsAnalyzing(false);
-    }, 3000);
+      const mockContext: QueryContext = {
+        market_clock: new Date().toISOString(),
+        risk_regime: 'calm',
+        news_heat: 3,
+        chain_activity_heat: 2
+      };
+
+      const response = await JunoOrchestrator.processQuery(query, mockProfile, mockContext);
+      
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: response.summary,
+        timestamp: new Date(),
+        junoResponse: response
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+      setCurrentAnalysis(response.market_view);
+    } catch (error) {
+      toast({
+        title: "Analysis failed", 
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setIsAnalyzing(false);
   };
 
   const handleFileUpload = () => {
@@ -216,11 +215,11 @@ const Research = () => {
             <CardContent className="p-3">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="border-lime/30 text-lime">Free Tier</Badge>
-                  <span className="text-xs text-muted-foreground">7/10 RC</span>
+                  <Badge variant="outline" className="border-lime/30 text-lime">{walletInfo?.tier || 'Free Tier'}</Badge>
+                  <span className="text-xs text-muted-foreground">{walletInfo?.researchCredits || 7}/10 RC</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {connectedWallet ? connectedWallet : 'Connect wallet to stake'}
+                  {walletInfo ? formatAddress(walletInfo.address) : 'Connect wallet to stake'}
                 </p>
               </div>
             </CardContent>
@@ -271,11 +270,11 @@ const Research = () => {
                 </div>
                 
                 {/* Agent Responses */}
-                {message.agents && (
+                {message.junoResponse?.agent_evidence && (
                   <div className="mt-4 space-y-3">
                     <h4 className="font-display font-semibold text-sm text-muted-foreground">Agent Analysis</h4>
                     <div className="grid md:grid-cols-2 gap-3">
-                      {message.agents.map((agent) => (
+                      {message.junoResponse.agent_evidence.map((agent) => (
                         <Card key={agent.agent} className="insight-card">
                           <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
@@ -312,12 +311,12 @@ const Research = () => {
                 )}
 
                 {/* Market Analysis */}
-                {message.analysis && (
+                {message.junoResponse?.market_view && (
                   <div className="mt-4">
                     <Card className="insight-card">
                       <CardHeader>
                         <CardTitle className="font-display flex items-center justify-between">
-                          Market View: {message.analysis.asset}
+                          Market View: {message.junoResponse.market_view.asset}
                           <Badge 
                             variant="outline"
                             className={`${
