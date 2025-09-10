@@ -25,6 +25,8 @@ import { useWallet } from '@/hooks/useWallet';
 import { CommandPalette } from '@/components/CommandPalette';
 import { ChartVision } from '@/components/ChartVision';
 import { PaperTradingModal } from '@/components/PaperTradingModal';
+import { PortfolioPanel } from '@/components/PortfolioPanel';
+import { Newsletter } from '@/components/Newsletter';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -209,8 +211,8 @@ const Research = () => {
           </div>
         </div>
 
-        {/* User Status */}
-        <div className="p-4 border-t border-border">
+        {/* User Status & Portfolio Panel */}
+        <div className="p-4 border-t border-border space-y-4">
           <Card className="bg-background">
             <CardContent className="p-3">
               <div className="space-y-2">
@@ -221,6 +223,17 @@ const Research = () => {
                 <p className="text-xs text-muted-foreground">
                   {walletInfo ? formatAddress(walletInfo.address) : 'Connect wallet to stake'}
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Mini Portfolio Panel */}
+          <Card className="bg-background">
+            <CardContent className="p-3">
+              <div className="text-center">
+                <div className="text-xs text-muted-foreground mb-1">Portfolio P&L</div>
+                <div className="font-mono text-terminal-green text-sm">+$127.50</div>
+                <div className="text-xs text-terminal-green">+0.25%</div>
               </div>
             </CardContent>
           </Card>
