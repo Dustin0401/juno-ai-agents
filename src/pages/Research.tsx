@@ -320,12 +320,12 @@ const Research = () => {
                           <Badge 
                             variant="outline"
                             className={`${
-                              message.analysis.bias === 'bullish' ? 'border-terminal-green/30 text-terminal-green' :
-                              message.analysis.bias === 'bearish' ? 'border-terminal-red/30 text-terminal-red' :
+                              message.junoResponse.market_view.bias === 'bullish' ? 'border-terminal-green/30 text-terminal-green' :
+                              message.junoResponse.market_view.bias === 'bearish' ? 'border-terminal-red/30 text-terminal-red' :
                               'border-terminal-amber/30 text-terminal-amber'
                             }`}
                           >
-                            {message.analysis.bias} • {message.analysis.conviction}% conviction
+                            {message.junoResponse.market_view.bias} • {message.junoResponse.market_view.conviction}% conviction
                           </Badge>
                         </CardTitle>
                       </CardHeader>
@@ -334,29 +334,37 @@ const Research = () => {
                           <div>
                             <h5 className="font-semibold text-sm mb-2">Key Levels</h5>
                             <div className="space-y-1 text-sm">
-                              <div>Support: {message.analysis.keyLevels.support.map(s => `$${s.toLocaleString()}`).join(', ')}</div>
-                              <div>Resistance: {message.analysis.keyLevels.resistance.map(r => `$${r.toLocaleString()}`).join(', ')}</div>
+                              <div>Support: {message.junoResponse.market_view.key_levels.support.map(s => `$${s.toLocaleString()}`).join(', ')}</div>
+                              <div>Resistance: {message.junoResponse.market_view.key_levels.resistance.map(r => `$${r.toLocaleString()}`).join(', ')}</div>
                             </div>
                           </div>
                           <div>
                             <h5 className="font-semibold text-sm mb-2">Risk/Reward</h5>
-                            <div className="text-lg font-mono text-lime">{message.analysis.riskReward}:1</div>
+                            <div className="text-lg font-mono text-lime">2.5:1</div>
                           </div>
                         </div>
                         
                         <div>
                           <h5 className="font-semibold text-sm mb-2">Recommendations</h5>
                           <ul className="space-y-1">
-                            {message.analysis.recommendations.map((rec, idx) => (
+                            {message.junoResponse.recommendations.map((rec, idx) => (
                               <li key={idx} className="text-sm flex items-start gap-2">
                                 <div className="w-1 h-1 bg-lime rounded-full mt-2 flex-shrink-0"></div>
-                                {rec}
+                                {rec.entry_zone} - {rec.fit_for_user}
                               </li>
                             ))}
                           </ul>
                         </div>
 
-                        <Button size="sm" variant="outline" className="btn-outline-lime w-full">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="btn-outline-lime w-full"
+                          onClick={() => {
+                            setCurrentAnalysis(message.junoResponse.market_view);
+                            setShowPaperTrading(true);
+                          }}
+                        >
                           Simulate Trade
                         </Button>
                       </CardContent>
@@ -456,6 +464,15 @@ const Research = () => {
             setInputValue(`/chart ${file.name} uploaded`);
           }
         }}
+      />
+
+      {/* Modals */}
+      <CommandPalette onSlashCommand={(cmd) => setInputValue(cmd + ' ')} />
+      <ChartVision />
+      <PaperTradingModal 
+        isOpen={showPaperTrading}
+        onClose={() => setShowPaperTrading(false)}
+        analysis={currentAnalysis}
       />
     </div>
   );

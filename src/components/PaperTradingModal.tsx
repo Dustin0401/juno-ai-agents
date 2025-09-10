@@ -1,7 +1,7 @@
 // Paper Trading Modal Component
 // Simulate trades with position sizing and risk management
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,7 @@ export const PaperTradingModal = ({ isOpen, onClose, analysis }: PaperTradingMod
   const riskPercent = (riskAmount / portfolioValue) * 100;
 
   // Auto-populate levels from analysis
-  useState(() => {
+  useEffect(() => {
     if (analysis && isOpen) {
       setPosition(analysis.bias === 'bearish' ? 'short' : 'long');
       
