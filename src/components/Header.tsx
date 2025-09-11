@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { Wallet, Menu, X, Home } from 'lucide-react';
 
 interface HeaderProps {
   connectedWallet: string | null;
@@ -54,6 +56,15 @@ export const Header = ({ connectedWallet, onWalletConnect }: HeaderProps) => {
 
           {/* Wallet Connection */}
           <div className="flex items-center gap-4">
+            <NotificationCenter />
+            
+            <Link to="/app">
+              <Button variant="ghost" size="sm" className="hover:bg-lime/10">
+                <Home className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+            
             {connectedWallet && (
               <Badge variant="outline" className="border-lime/30 text-lime">
                 Free Tier • 10 RC/day
