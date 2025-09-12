@@ -1,8 +1,10 @@
-// Web3 Wallet Integration Hook
-// Supports MetaMask and Phantom for Ethereum and Solana
+// Enhanced Web3 Wallet Integration Hook
+// Supports MetaMask, WalletConnect, and Phantom for Ethereum and Solana
 
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { ethers } from 'ethers';
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 
 export interface WalletInfo {
   address: string;
@@ -17,8 +19,12 @@ declare global {
   interface Window {
     ethereum?: any;
     solana?: any;
+    BinanceChain?: any;
   }
 }
+
+const ETHEREUM_CHAIN_ID = '0x1'; // Mainnet
+const SOLANA_NETWORK = clusterApiUrl('mainnet-beta');
 
 export const useWallet = () => {
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
@@ -46,7 +52,7 @@ export const useWallet = () => {
     }
   };
 
-  const connectWallet = useCallback(async (walletType: 'metamask' | 'phantom') => {
+  const connectWallet = useCallback(async (walletType: 'metamask' | 'phantom' | 'walletconnect') => {
     setIsConnecting(true);
     
     try {
@@ -60,19 +66,40 @@ export const useWallet = () => {
           return;
         }
 
+        // Request account access
         const accounts = await window.ethereum.request({
           method: 'eth_requestAccounts'
         });
+
+        // Switch to Ethereum mainnet if needed
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: ETHEREUM_CHAIN_ID }],
+          });
+        } catch (switchError: any) {
+          console.log('Chain switch error:', switchError);
+        }
         
         if (accounts.length > 0) {
           await loadWalletInfo(accounts[0], 'ethereum');
+          
+          // Set up account change listener
+          window.ethereum.on('accountsChanged', (accounts: string[]) => {
+            if (accounts.length === 0) {
+              disconnectWallet();
+            } else {
+              loadWalletInfo(accounts[0], 'ethereum');
+            }
+          });
+
           toast({
             title: "Wallet connected",
             description: `Connected to ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`
           });
         }
       } else if (walletType === 'phantom') {
-        if (!window.solana) {
+        if (!window.solana || !window.solana.isPhantom) {
           toast({
             title: "Phantom not found", 
             description: "Please install Phantom wallet to continue",
@@ -81,13 +108,26 @@ export const useWallet = () => {
           return;
         }
 
-        const response = await window.solana.connect();
+        const response = await window.solana.connect({ onlyIfTrusted: false });
         const address = response.publicKey.toString();
         
         await loadWalletInfo(address, 'solana');
+
+        // Set up disconnect listener
+        window.solana.on('disconnect', () => {
+          disconnectWallet();
+        });
+
         toast({
           title: "Wallet connected",
           description: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`
+        });
+      } else if (walletType === 'walletconnect') {
+        // WalletConnect implementation would need additional setup
+        toast({
+          title: "WalletConnect",
+          description: "WalletConnect integration coming soon",
+          variant: "default"
         });
       }
     } catch (error: any) {
@@ -104,8 +144,30 @@ export const useWallet = () => {
 
   const loadWalletInfo = async (address: string, network: 'ethereum' | 'solana') => {
     try {
-      // In production, this would fetch real wallet data and $JNO staking info
-      // For now, simulate based on address
+      let balance = 0;
+      
+      // Get real balance for connected wallet
+      if (network === 'ethereum' && window.ethereum) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const balanceWei = await provider.getBalance(address);
+          balance = parseFloat(ethers.formatEther(balanceWei));
+        } catch (error) {
+          console.error('Failed to fetch ETH balance:', error);
+        }
+      } else if (network === 'solana' && window.solana) {
+        try {
+          const connection = new Connection(SOLANA_NETWORK);
+          const publicKey = new PublicKey(address);
+          const balanceLamports = await connection.getBalance(publicKey);
+          balance = balanceLamports / 1e9; // Convert lamports to SOL
+        } catch (error) {
+          console.error('Failed to fetch SOL balance:', error);
+        }
+      }
+
+      // For now, simulate $JNO staking data based on wallet address
+      // In production, this would query the actual staking contract
       const mockStake = parseInt(address.slice(-4), 16); // Use last 4 chars as pseudo-random
       const stakedAmount = mockStake % 150000; // 0-150k range
       
@@ -121,7 +183,7 @@ export const useWallet = () => {
 
       setWalletInfo({
         address,
-        balance: mockStake / 100, // Mock balance
+        balance,
         network,
         tier,
         stakedAmount,

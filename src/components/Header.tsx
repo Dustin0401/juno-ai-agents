@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { WalletModal } from '@/components/WalletModal';
+import { useWallet } from '@/hooks/useWallet';
 import { Wallet, Menu, X, Home } from 'lucide-react';
 
 interface HeaderProps {
@@ -12,14 +14,12 @@ interface HeaderProps {
 
 export const Header = ({ connectedWallet, onWalletConnect }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const { walletInfo, formatAddress, isConnecting } = useWallet();
 
   const handleWalletConnect = () => {
-    if (connectedWallet) {
-      onWalletConnect(null);
-    } else {
-      // Simulate wallet connection
-      onWalletConnect('0x742d...3a9f');
-    }
+    // This function is now handled by the WalletModal
+    setIsWalletModalOpen(true);
   };
 
   const navigation = [
@@ -65,20 +65,21 @@ export const Header = ({ connectedWallet, onWalletConnect }: HeaderProps) => {
               </Button>
             </Link>
             
-            {connectedWallet && (
-              <Badge variant="outline" className="border-lime/30 text-lime">
-                Free Tier • 10 RC/day
+            {walletInfo && (
+              <Badge variant="outline" className="border-lime/30 text-lime hidden md:flex">
+                {walletInfo.tier} Tier • {walletInfo.researchCredits} RC
               </Badge>
             )}
             
             <Button
-              onClick={handleWalletConnect}
-              variant={connectedWallet ? "outline" : "default"}
-              className={connectedWallet ? "btn-outline-lime" : "btn-lime"}
+              onClick={() => setIsWalletModalOpen(true)}
+              variant={walletInfo ? "outline" : "default"}
+              className={walletInfo ? "btn-outline-lime" : "btn-lime"}
               size="sm"
+              disabled={isConnecting}
             >
               <Wallet className="w-4 h-4 mr-2" />
-              {connectedWallet ? connectedWallet : 'Connect Wallet'}
+              {isConnecting ? 'Connecting...' : walletInfo ? formatAddress(walletInfo.address) : 'Connect Wallet'}
             </Button>
 
             {/* Mobile Menu Toggle */}
@@ -111,6 +112,12 @@ export const Header = ({ connectedWallet, onWalletConnect }: HeaderProps) => {
           </div>
         )}
       </div>
+
+      {/* Wallet Modal */}
+      <WalletModal 
+        open={isWalletModalOpen}
+        onOpenChange={setIsWalletModalOpen}
+      />
     </header>
   );
 };
