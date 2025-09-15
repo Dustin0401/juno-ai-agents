@@ -52,6 +52,52 @@
     --ring: 79 89% 75%; /* lime focus ring */
 
     --radius: 1rem; /* Softer, more modern radius */
+  }
+
+  /* Light theme variations */
+  .light {
+    --background: 0 0% 100%; /* white */
+    --surface: 0 0% 98%; /* #FAFAFA */
+    --foreground: 153 17% 15%; /* #1F2821 */
+    --muted-text: 91 11% 40%; /* #5A6251 */
+    
+    /* JUNO lime accent system - adjusted for light mode */
+    --lime: 79 89% 60%; /* darker lime for better contrast */
+    --lime-foreground: 0 0% 100%; /* white text on lime */
+    --lime-muted: 79 60% 45%; /* darker lime for borders */
+    
+    /* Terminal-style accents - adjusted */
+    --terminal-green: 120 60% 45%; /* darker green */
+    --terminal-amber: 45 80% 50%; /* adjusted amber */
+    --terminal-red: 0 70% 50%; /* adjusted red */
+    
+    /* Surface variations */
+    --card: 0 0% 98%; /* #FAFAFA */
+    --card-foreground: 153 17% 15%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 153 17% 15%;
+    
+    /* Semantic colors */
+    --primary: 79 89% 60%; /* darker lime */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 96%; /* #F5F5F5 */
+    --secondary-foreground: 153 17% 15%;
+    
+    --muted: 0 0% 96%;
+    --muted-foreground: 91 11% 40%;
+    
+    --accent: 79 89% 60%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 0 0% 90%; /* #E6E6E6 */
+    --input: 0 0% 96%;
+    --ring: 79 89% 60%;
+  }
     
     /* Professional shadows */
     --shadow-sm: 0 2px 8px hsl(var(--background) / 0.3);
