@@ -24,7 +24,7 @@ import {
 import { JunoOrchestrator, type UserProfile, type QueryContext, type JunoResponse } from '@/lib/agents';
 import { useWallet } from '@/hooks/useWallet';
 import { CommandPalette } from '@/components/CommandPalette';
-import { ChartVision } from '@/components/ChartVision';
+
 import { PaperTradingModal } from '@/components/PaperTradingModal';
 import { PortfolioPanel } from '@/components/PortfolioPanel';
 import { AdvancedAnalytics } from '@/components/AdvancedAnalytics';
@@ -75,7 +75,7 @@ const Research = () => {
   const [inputValue, setInputValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showChartVision, setShowChartVision] = useState(false);
+  
   const [showPaperTrading, setShowPaperTrading] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -433,7 +433,7 @@ const Research = () => {
 
       {/* Modals */}
       <CommandPalette onSlashCommand={(cmd) => setInputValue(cmd + ' ')} />
-      <ChartVision />
+      
       <PaperTradingModal 
         isOpen={showPaperTrading}
         onClose={() => setShowPaperTrading(false)}
