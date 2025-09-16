@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import Research from "./pages/Research";
+import Backtest from "./pages/Backtest";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/MobileOptimizations";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/app" element={<Research />} />
+            <Route path="/backtest" element={<Backtest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

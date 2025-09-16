@@ -239,7 +239,12 @@ const Research = () => {
                           <Bell className="w-4 h-4 mr-2" />
                           Alerts
                         </Button>
-                        <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full justify-start"
+                          onClick={() => window.location.href = '/backtest'}
+                        >
                           <BarChart3 className="w-4 h-4 mr-2" />
                           Backtests
                         </Button>
