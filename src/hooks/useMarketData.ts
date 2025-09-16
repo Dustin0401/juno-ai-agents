@@ -1,5 +1,6 @@
 // Real-time market data simulation hook
 import { useState, useEffect, useCallback } from 'react';
+import { safeGetItem } from '@/lib/storage';
 
 export interface MarketData {
   symbol: string;
@@ -101,7 +102,7 @@ export const useMarketData = () => {
   // Load portfolio from paper trades
   useEffect(() => {
     const loadPortfolio = () => {
-      const paperTrades = JSON.parse(localStorage.getItem('paperTrades') || '[]');
+      const paperTrades = JSON.parse(safeGetItem('paperTrades') || '[]');
       const openTrades = paperTrades.filter((trade: any) => trade.status === 'open');
       
       const positions: PortfolioPosition[] = openTrades.map((trade: any) => {

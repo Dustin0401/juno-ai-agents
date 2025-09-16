@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MarketData, PortfolioPosition } from './useMarketData';
+import { safeGetItem } from '@/lib/storage';
 
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 const CRYPTO_SYMBOLS = {
@@ -138,7 +139,7 @@ export const useRealMarketData = () => {
   // Load portfolio from paper trades
   useEffect(() => {
     const loadPortfolio = () => {
-      const paperTrades = JSON.parse(localStorage.getItem('paperTrades') || '[]');
+      const paperTrades = JSON.parse(safeGetItem('paperTrades') || '[]');
       const openTrades = paperTrades.filter((trade: any) => trade.status === 'open');
       
       const positions: PortfolioPosition[] = openTrades.map((trade: any) => {

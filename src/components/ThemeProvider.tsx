@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeContext } from '../hooks/useTheme';
+import { safeGetItem, safeSetItem } from '@/lib/storage';
 
 type Theme = 'dark' | 'light';
 
@@ -7,14 +8,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<Theme>('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('juno-theme') as Theme;
+    const stored = safeGetItem('juno-theme') as Theme;
     if (stored && ['dark', 'light'].includes(stored)) {
       setThemeState(stored);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('juno-theme', theme);
+    safeSetItem('juno-theme', theme);
     document.documentElement.classList.toggle('light', theme === 'light');
   }, [theme]);
 

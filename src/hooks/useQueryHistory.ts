@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { safeGetItem, safeSetItem, safeRemoveItem } from '@/lib/storage';
 
 export interface QueryHistoryItem {
   id: string;
@@ -16,7 +17,7 @@ export const useQueryHistory = () => {
 
   // Load history from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('juno-query-history');
+    const stored = safeGetItem('juno-query-history');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -34,7 +35,7 @@ export const useQueryHistory = () => {
   // Save history to localStorage
   const saveHistory = useCallback((newHistory: QueryHistoryItem[]) => {
     try {
-      localStorage.setItem('juno-query-history', JSON.stringify(newHistory));
+      safeSetItem('juno-query-history', JSON.stringify(newHistory));
       setHistory(newHistory);
     } catch (error) {
       console.error('Failed to save query history:', error);
@@ -75,7 +76,7 @@ export const useQueryHistory = () => {
   }, [history, saveHistory]);
 
   const clearHistory = useCallback(() => {
-    localStorage.removeItem('juno-query-history');
+    safeRemoveItem('juno-query-history');
     setHistory([]);
   }, []);
 

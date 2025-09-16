@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { TrendingUp, TrendingDown, AlertTriangle, Target, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { safeGetItem, safeSetItem } from '@/lib/storage';
 
 interface MarketAnalysis {
   asset: string;
@@ -115,9 +116,9 @@ export const PaperTradingModal = ({ isOpen, onClose, analysis }: PaperTradingMod
     };
 
     // Save to localStorage (in production, send to backend)
-    const existingTrades = JSON.parse(localStorage.getItem('paperTrades') || '[]');
+    const existingTrades = JSON.parse(safeGetItem('paperTrades') || '[]');
     existingTrades.push(trade);
-    localStorage.setItem('paperTrades', JSON.stringify(existingTrades));
+    safeSetItem('paperTrades', JSON.stringify(existingTrades));
 
     toast({
       title: "Paper trade created",
